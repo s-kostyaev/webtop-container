@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <style>
+      tbody tr:hover {
+      background: #FFEBCD; /* Цвет фона при наведении */
+      }
+      button {
+      border-radius: 5px; 
+      }
+      h1 {
+      font-size: 2em;
+      font-family: Ubuntu;
+      }
+      table {
+      font-size: 1.2em;
+      font-family: Ubuntu;
+      }
+      .invisible {
+      visibility: hidden;
+      display: none;
+      }
+      .visible {
+      visibility: visible;
+      }
+    </style>
+    <script src="/js/jquery-1.11.0.min.js"></script>
+    <script src="/js/jput-2.js"></script>
+    <script src="/js/loader.js"></script>
+  </head>
+  <body>
+    <div id="content" class="visible"> <!-- FIXME invisible. Debug only -->
+      <div jput="text">
+        <h1 align="center">
+          Память {{json.Name}} исчерпана
+        </h1>
+        <h3 align="center">
+          Память {{json.Name}}
+          достигла порогового значения {{json.LimitMb}} Mb. Для продолжения работы необходимо
+          завершить один из процессов
+          <div class={{json.TmpUsage=="0"?"invisible":"visible"}}>
+            или очистить /tmp.
+            
+            <p>
+	          /tmp использует {{json.TmpUsage}} Mb памяти. 
+              <button id="cleartmp" onclick="requestUrl('/command/cleartmp/{{json.Name}}')">
+                очистить
+              </button>
+            </p>
+          </div>
+        </h3>
+      </div>
+      <table width="80%" align="center" cellpadding="3"
+             cellspacing="0" jput="table">
+        <thead>
+          <tr>
+            <td><b>PID</b></td>
+            <td><b>Используемая  память</b></td>
+            <td><b>Команда</b></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class={{json.Memory=="0"?"invisible":"visible"}}>
+            <td>{{json.Pid}}</td>
+		    <td>{{json.Memory}} Mb</td>
+		    <td>{{json.Command}}</td>
+	        <td><button class={{json.Command=="/sbin/init"?"invisible":"visible"}} onclick="requestUrl('/command/kill/{{json.Pid}}')">завершить</button></td>
+	      </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+  </body>
+</html>
