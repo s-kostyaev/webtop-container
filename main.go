@@ -18,7 +18,7 @@ func main() {
 	reconnect()
 	http.Handle("/", http.FileServer(http.Dir(staticDir)))
 	http.HandleFunc("/command/", handleCommand)
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":80", nil)
 }
 
 func reconnect() {
