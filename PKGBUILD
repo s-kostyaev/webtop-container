@@ -20,6 +20,6 @@ build(){
 package(){
   install -D -m 755 ${srcdir}/${pkgname}/webtop-container ${pkgdir}/usr/bin/webtop-container
   install -D -m 644 ${srcdir}/${pkgname}/webtop-container.service ${pkgdir}/usr/lib/systemd/system/webtop-container.service
-  install -D -m 644 ${srcdir}/${pkgname}/static ${pkgdir}/usr/share/webtop
+  install -d -m 644 ${srcdir}/${pkgname}/static ${pkgdir}/usr/share/webtop
 }
 
