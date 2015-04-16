@@ -9,7 +9,7 @@ const (
 	configPath = "/etc/webtop/container.toml"
 	comment    = "webtop"
 	staticDir  = "/usr/share/webtop/"
-	socketPath = "/tmp/webtop.sock"
+	socketPath = "/webtop.sock"
 )
 
 var (
