@@ -29,7 +29,7 @@
     <script src="/js/loader.js"></script>
   </head>
   <body>
-    <div id="content" class="visible"> <!-- FIXME invisible. Debug only -->
+    <div id="content" class="invisible">
       <div jput="text">
         <h1 align="center">
           Память {{json.Name}} исчерпана
@@ -38,7 +38,7 @@
           Память {{json.Name}}
           достигла порогового значения {{json.LimitMb}} Mb. Для продолжения работы необходимо
           завершить один из процессов
-          <div class={{json.TmpUsage=="0"?"invisible":"visible"}}>
+          <div class="{{json.TmpUsage=='0'?'invisible':'visible'}}">
             или очистить /tmp.
             
             <p>
@@ -51,7 +51,7 @@
         </h3>
       </div>
       <table width="80%" align="center" cellpadding="3"
-             cellspacing="0" jput="table">
+             cellspacing="0">
         <thead>
           <tr>
             <td><b>PID</b></td>
@@ -59,12 +59,12 @@
             <td><b>Команда</b></td>
           </tr>
         </thead>
-        <tbody>
-          <tr class={{json.Memory=="0"?"invisible":"visible"}}>
+        <tbody jput="table">
+          <tr class="{{json.Memory=='0'?'invisible':'visible'}}">
             <td>{{json.Pid}}</td>
 		    <td>{{json.Memory}} Mb</td>
 		    <td>{{json.Command}}</td>
-	        <td><button class={{json.Command=="/sbin/init"?"invisible":"visible"}} onclick="requestUrl('/command/kill/{{json.Pid}}')">завершить</button></td>
+	        <td><button class="{{json.Command=='/sbin/init'?'invisible':'visible'}}" onclick="requestUrl('/command/kill/{{json.Pid}}')">завершить</button></td>
 	      </tr>
         </tbody>
       </table>

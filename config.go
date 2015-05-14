@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	configPath = "/etc/webtop/container.toml"
-	comment    = "webtop"
-	staticDir  = "/usr/share/webtop/"
-	socketPath = "/webtop.sock"
+	configPath        = "/etc/webtop/container.toml"
+	comment           = "webtop"
+	staticDir         = "/usr/share/webtop/"
+	dataSocketPath    = "/webtop-data.sock"
+	commandSocketPath = "/webtop-command.sock"
 )
 
 var (

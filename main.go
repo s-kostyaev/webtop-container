@@ -7,32 +7,42 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
 
-var sharedEncoder *json.Encoder
-
 func main() {
 	setupLogger()
-	reconnect()
+	go reconnect()
 	http.Handle("/", http.FileServer(http.Dir(staticDir)))
 	http.HandleFunc("/command/", handleCommand)
 	http.ListenAndServe(":80", nil)
 }
 
 func reconnect() {
-	connection, err := net.Dial("unix", socketPath)
+	// remove socket file if exist
+	os.Remove(dataSocketPath)
+	listener, err := net.Listen("unix", dataSocketPath)
 	if err != nil {
 		logger.Error(err.Error())
+		go reconnect()
+		return
 	}
-	sharedEncoder = json.NewEncoder(connection)
+	connection, err := listener.Accept()
+	if err != nil {
+		logger.Error("Access error: %s\n", err.Error())
+		go reconnect()
+		return
+	}
+
 	go answerReader(connection)
 }
 
 var answers = make(map[int]protocol.Answer)
 
 func handleCommand(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	newRequest := protocol.Request{}
 	newRequest.Id = newId()
 	containerIPs, err := net.LookupIP(r.Host)
@@ -41,7 +51,18 @@ func handleCommand(w http.ResponseWriter, r *http.Request) {
 	}
 	newRequest.Host = containerIPs[0].String()
 	newRequest.Cmd = strings.TrimPrefix(r.URL.RequestURI(), "/command/")
-	sharedEncoder.Encode(newRequest)
+	connection, err := net.Dial("unix", commandSocketPath)
+	if err != nil {
+		logger.Error(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, protocol.Answer{}.Data)
+		delete(answers, newRequest.Id)
+		return
+	}
+	defer connection.Close()
+	encoder := json.NewEncoder(connection)
+
+	encoder.Encode(newRequest)
 	startTime := time.Now()
 	// FIXME: get timeout from config
 	timeout := (3 * time.Second)
@@ -55,10 +76,11 @@ func handleCommand(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if answer.Status != "ok" {
-		logger.Error(answer.Status, answer.Error)
+		logger.Error("%#v %#v", answer.Status, answer.Error)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	fmt.Fprint(w, answer.Data)
+	buf, _ := json.Marshal(answer.Data)
+	w.Write(buf)
 	delete(answers, newRequest.Id)
 }
 
@@ -77,19 +99,16 @@ func newId() int {
 }
 
 func answerReader(r io.Reader) {
-	buf := make([]byte, 2048)
+	decoder := json.NewDecoder(r)
 	for {
-		n, err := r.Read(buf[:])
-		if err != nil {
-			logger.Error(err.Error())
-			reconnect()
-			return
-		}
 		currentAnswer := protocol.Answer{}
-		err = json.Unmarshal(buf[0:n], &currentAnswer)
+		err := decoder.Decode(&currentAnswer)
 		if err != nil {
-			logger.Error(err.Error())
-			continue
+			if err.Error() != "EOF" {
+				logger.Error(err.Error())
+			}
+			go reconnect()
+			return
 		}
 		answers[currentAnswer.Id] = currentAnswer
 	}
