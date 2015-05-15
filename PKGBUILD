@@ -1,6 +1,6 @@
 # Maintainer:  <s-kostyaev@ngs>
 pkgname=webtop-container-git
-pkgver=0.1.0
+pkgver=1.0.0
 pkgrel=1
 pkgdesc="container part of web-based top for cgroup"
 arch=('i686' 'x86_64')
@@ -20,6 +20,8 @@ build(){
 package(){
   install -D -m 755 ${srcdir}/${pkgname}/webtop-container ${pkgdir}/usr/bin/webtop-container
   install -D -m 644 ${srcdir}/${pkgname}/webtop-container.service ${pkgdir}/usr/lib/systemd/system/webtop-container.service
-  install -d -m 644 ${srcdir}/${pkgname}/static ${pkgdir}/usr/share/webtop
+  mkdir -p ${pkgdir}/usr/share/webtop
+  cp -r ${srcdir}/${pkgname}/static/* ${pkgdir}/usr/share/webtop
+  install -Dm 644 ${srcdir}/${pkgname}/container.toml ${pkgdir}/etc/webtop/container.toml
 }
 
