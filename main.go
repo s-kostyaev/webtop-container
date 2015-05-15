@@ -64,8 +64,7 @@ func handleCommand(w http.ResponseWriter, r *http.Request) {
 
 	encoder.Encode(newRequest)
 	startTime := time.Now()
-	// FIXME: get timeout from config
-	timeout := (3 * time.Second)
+	timeout := getConfig(configPath).WaitTimeout.Duration
 	answer, ok := answers[newRequest.Id]
 	for !ok {
 		time.Sleep(30 * time.Millisecond)
